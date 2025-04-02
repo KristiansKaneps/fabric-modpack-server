@@ -1,0 +1,16 @@
+.fabric
+audioplayer_uploads
+banned-ips.json
+banned-players.json
+defaultconfigs
+eula.txt
+libraries
+logs
+ops.json
+patchouli_books
+usercache.json
+usernamecache.json
+versions
+whitelist.json
+world
+config/skinrestorer/mojang_profile_cache.json

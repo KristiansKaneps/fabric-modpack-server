@@ -1,0 +1,18 @@
+{
+  "min_spawn_rate": 9600,
+  "max_spawn_rate": 54000,
+  "jumpscare": true,
+  "max_chase_duration": 2000,
+  "min_chase_duration": 600,
+  "climbing": true,
+  "vanish_distance": 24,
+  "spawn_at_day": false,
+  "darkness_effect": true,
+  "all_dimensions": false,
+  "break_blocks": true,
+  "darkness_effect_duration": 250,
+  "litghtnings": false,
+  "spawn_sounds": true,
+  "stage1_spawn_rate": 1200,
+  "stage2_spawn_rate": 2400
+}
