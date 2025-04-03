@@ -27,7 +27,7 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                         dir(env.SERVER_DIR) {
-                            def commitHash = sh(script: "git ls-remote ${repoUrl} ${branch} | awk '{ print \$1 }'", returnStdout: true).trim()
+                            def commitHash = sh(script: "git ls-remote ${env.GIT_REPOSITORY_URL} ${env.GIT_REPOSITORY_BRANCH} | awk '{ print \$1 }'", returnStdout: true).trim()
                             def commitMessage = sh(script: "git log -1 --pretty=%B ${commitHash}", returnStdout: true).trim()
                             if (commitMessage.startsWith("PUBLISH CONFIG")) {
                                 skipPipeline = true
