@@ -1,3 +1,5 @@
+// RCON will be automatically enabled. Make sure that the RCON is not accessible from the outside.
+
 def skipPipeline = false
 def serverStarted = false
 
@@ -83,7 +85,7 @@ pipeline {
                                     sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
                                 } else {
                                     echo 'Minecraft RCON port is open. Trying to stop through RCON...'
-                                    if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)) {
+                                    if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS)) {
                                         echo 'Minecraft RCON authentication failure. Trying to stop again manually...'
                                         sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
                                     }
@@ -110,7 +112,7 @@ pipeline {
                                         countdownSeconds -= interval
                                     }
                                 }
-                                if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)) {
+                                if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS)) {
                                     echo 'Minecraft RCON authentication failure. Trying to stop again manually...'
                                     sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
                                 }
