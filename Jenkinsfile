@@ -68,6 +68,7 @@ pipeline {
                         }
                         
                         dir(env.SERVER_DIR) {
+                            sh "sudo -u minecraft git -C ${env.SERVER_DIR} pull"
                             sh 'ls'
                         }
                     }
