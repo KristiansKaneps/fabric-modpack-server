@@ -1,2 +1,2 @@
-screen -dmS minecraft ./run.sh
+screen -dmS minecraft-fabric-modpack ./run.sh
 
