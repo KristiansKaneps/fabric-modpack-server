@@ -7,7 +7,6 @@ pipeline {
     }
 
     environment {
-        INSTANCE_NAME = 'minecraft-fabric-modpack'
         SERVER_DIR = ''
         SERVER_PORT = '25565'
     }
