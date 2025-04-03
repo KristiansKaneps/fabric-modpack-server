@@ -6,7 +6,6 @@ pipeline {
     }
 
     environment {
-        START_SERVER_IF_NOT_RUNNING = 'false'
         INSTANCE_NAME = 'minecraft-fabric-modpack'
         SERVER_DIR = ''
         SERVER_PORT = '25565'
@@ -16,19 +15,6 @@ pipeline {
         stage ('Stop Minecraft Server') {
             steps {
                 script {
-                    def portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
-
-                    if (portOpen == 'not running') {
-                        if (env.START_SERVER_IF_NOT_RUNNING != 'true') {
-                            echo 'Minecraft server is not running. Marking pipeline as successful.'
-                            currentBuild.result = 'SUCCESS'
-                            return
-                        }
-                    } else {
-                        echo 'Minecraft server is running. Stopping...'
-                        sh "screen -S ${env.INSTANCE_NAME} -X stuff \"stop^M\""
-                    }
-
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                         if (!env.SERVER_DIR?.trim()) {
                             error 'SERVER_DIR is empty. Pipeline will be aborted.'
@@ -40,6 +26,30 @@ pipeline {
 
                         dir(env.SERVER_DIR) {
                             sh 'ls'
+                        }
+
+                        def portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
+                        if (portOpen == 'not running') {
+                            echo 'Minecraft server is not running.'
+                        } else {
+                            echo 'Minecraft server is running. Stopping...'
+                            sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
+                            sleep time: 15, unit: 'SECONDS'
+
+                            portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
+                            if (portOpen == 'not running') {
+                                echo 'Minecraft server is not running.'
+                            } else {
+                                echo 'Minecraft server is running after 15 seconds. Trying to stop again...'
+                                sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
+                                sleep time: 20, unit: 'SECONDS'
+                                portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
+                                if (portOpen == 'not running') {
+                                    echo 'Minecraft server is not running.'
+                                } else {
+                                    error 'Could not stop minecraft server. Manual intervention required!'
+                                }
+                            }
                         }
                     }
                 }
@@ -78,16 +88,21 @@ pipeline {
 
                         dir(env.SERVER_DIR) {
                             sh 'ls'
+                            echo 'Starting minecraft server...'
+                            sh "sudo -u minecraft ${env.SERVER_DIR}/run-detached.sh"
+                            echo 'Waiting for server to start...'
+                            sleep time: 10, unit: 'SECONDS'
+                            def portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
+                            if (portOpen == 'not running') {
+                                error 'Minecraft server did NOT start.'
+                            } else {
+                                echo 'Minecraft server is running. Waiting for server to start...'
+                                sleep time: 300, unit: 'SECONDS'
+                                echo 'Assuming that the server is started.'
+                            }
                         }
                     }
                 }
-            }
-        }
-        stage('Wait') {
-            steps {
-                echo 'Waiting for server to start...'
-                sleep time: 300, unit: 'SECONDS'
-                echo 'Assuming that the server is started.'
             }
         }
     }
