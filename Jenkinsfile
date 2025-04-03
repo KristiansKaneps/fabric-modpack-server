@@ -92,7 +92,7 @@ pipeline {
                             echo 'Starting minecraft server...'
                             sh "sudo -u minecraft ${env.SERVER_DIR}/run-detached.sh"
                             echo 'Waiting for server to start...'
-                            sleep time: 300, unit: 'SECONDS'
+                            sleep time: 180, unit: 'SECONDS'
                             def portOpen = sh(script: "netstat -tuln | grep ':${env.SERVER_PORT}' || echo 'not running'", returnStdout: true).trim()
                             if (portOpen == 'not running') {
                                 error 'Minecraft server did NOT start.'
