@@ -94,6 +94,7 @@ pipeline {
                             } else {
                                 echo 'Minecraft RCON port is open. Trying to stop through RCON...'
                                 def playerCount = checkPlayerCount(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS)
+                                echo "Currently online player count: $playerCount"
                                 if (playerCount > 0) {
                                     echo 'There are players currently in the server. Broadcasting countdown...'
 
@@ -260,6 +261,7 @@ def broadcastMessage(String rconHost, String rconPort, String rconPassword, Stri
 
 def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
     def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'list' || echo '0'", returnStdout: true).trim()
+    echo "RCON Command Output: $text"
     if (text == '0') {
         return 0
     }
