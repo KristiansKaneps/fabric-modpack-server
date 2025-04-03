@@ -94,16 +94,25 @@ pipeline {
                             } else {
                                 echo 'Minecraft RCON port is open. Trying to stop through RCON...'
                                 def playerCount = checkPlayerCount(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS)
-                                echo "Currently online player count: $playerCount"
+                                if (playerCount == -1) {
+                                    echo "Could not check online player count due to an error. Assuming there are no players online."
+                                } else {
+                                    echo "Currently online player count: $playerCount"
+                                }
                                 if (playerCount > 0) {
                                     echo 'There are players currently in the server. Broadcasting countdown...'
 
-                                    def countdownSeconds = 60  // Countdown time (adjust as needed)
-                                    def interval = 10  // Message interval (every 10 seconds)
+                                    def countdownSeconds = 60
+                                    def interval = 10
 
                                     while (countdownSeconds > 0) {
-                                        echo "Server stopping in ${countdownSeconds} seconds..."
-                                        broadcastMessage(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS, 'Server stopping in ${countdownSeconds} seconds!')
+                                        if (countdownSeconds == 1) {
+                                            echo "Server is stopping in ${countdownSeconds} second..."
+                                            broadcastMessage(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS, "Server will stop/restart in ${countdownSeconds} second!")
+                                        } else {
+                                            echo "Server is stopping in ${countdownSeconds} seconds..."
+                                            broadcastMessage(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS, "Server will stop/restart in ${countdownSeconds} seconds!")
+                                        }
                                         if (countdownSeconds <= 10) {
                                             interval = 1
                                         } else if (countdownSeconds <= 30) {
@@ -112,6 +121,8 @@ pipeline {
                                         sleep time: interval, unit: 'SECONDS'
                                         countdownSeconds -= interval
                                     }
+                                    echo "Server is stopping now!"
+                                    broadcastMessage(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS, 'Server is stopping/restarting now!')
                                 }
                                 if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASS)) {
                                     echo 'Minecraft RCON authentication failure. Trying to stop again manually...'
@@ -261,15 +272,15 @@ def broadcastMessage(String rconHost, String rconPort, String rconPassword, Stri
 
 def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
     def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'list' || echo '0'", returnStdout: true).trim()
-    // Clean up any non-printable characters (e.g., color codes)
-    text = text.replaceAll(/\x1b\[[0-9;]*m/, '')
-    echo "RCON Command Output: $text"
     if (text == '0') {
-        return 0
+        return -1
     }
 
-    // Example output from `list` command: "There are 3 of a max 20 players online: player1, player2, player3"
-    def matcher = text =~ /There are (\d+) of a max \d+ players online/
+    // Clean up any non-printable characters (e.g., color codes)
+    text = text.replaceAll(/\x1b\[[0-9;]*m/, '')
+
+    // Example output from `list` command: "There are 3 of a max of 16 players online: player1, player2, player3"
+    def matcher = text =~ /There are (\d+) of a max of \d+ players online/
 
     if (matcher) {
         return matcher[0][1].toInteger()
