@@ -26,13 +26,10 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
-                        dir(env.SERVER_DIR) {
-                            def commitHash = sh(script: "sudo -u minecraft git ls-remote ${env.GIT_REPOSITORY_URL} ${env.GIT_REPOSITORY_BRANCH} | awk '{ print \$1 }'", returnStdout: true).trim()
-                            def commitMessage = sh(script: "sudo -u minecraft git log -1 --pretty=%B ${commitHash}", returnStdout: true).trim()
+                        def commitMessage = sh(script: "git log -1 --pretty=%B ${env.GIT_COMMIT}", returnStdout: true).trim()
                             if (commitMessage.startsWith("PUBLISH CONFIG")) {
-                                skipPipeline = true
-                                echo "Skipping pipeline execution due to 'PUBLISH CONFIG' commit message"
-                            }
+                            skipPipeline = true
+                            echo "Skipping pipeline execution due to 'PUBLISH CONFIG' commit message"
                         }
                     }
                 }
