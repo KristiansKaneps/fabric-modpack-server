@@ -27,7 +27,8 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                         def commitMessage = sh(script: "git log -1 --pretty=%B ${env.GIT_COMMIT}", returnStdout: true).trim()
-                            if (commitMessage.startsWith("PUBLISH CONFIG")) {
+                        echo "Commit message: ${commitMessage}"
+                        if (commitMessage.startsWith("PUBLISH CONFIG")) {
                             skipPipeline = true
                             echo "Skipping pipeline execution due to 'PUBLISH CONFIG' commit message"
                         }
@@ -82,7 +83,10 @@ pipeline {
                                     sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
                                 } else {
                                     echo 'Minecraft RCON port is open. Trying to stop through RCON...'
-                                    stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)
+                                    if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)) {
+                                        echo 'Minecraft RCON authentication failure. Trying to stop again manually...'
+                                        sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
+                                    }
                                 }
                                 sleep time: 15, unit: 'SECONDS'
                             } else {
@@ -106,7 +110,10 @@ pipeline {
                                         countdownSeconds -= interval
                                     }
                                 }
-                                stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)
+                                if (!stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)) {
+                                    echo 'Minecraft RCON authentication failure. Trying to stop again manually...'
+                                    sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
+                                }
                                 sleep time: 15, unit: 'SECONDS'
                             }
 
@@ -246,11 +253,11 @@ pipeline {
 }
 
 def broadcastMessage(String rconHost, String rconPort, String rconPassword, String message) {
-    def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'say $message' || echo 'true'", returnStdout: true).trim();
+    return sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'say $message' || echo 'failed'", returnStdout: true).trim() != 'failed'
 }
 
 def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
-    def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'list' || echo '0'", returnStdout: true).trim();
+    def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'list' || echo '0'", returnStdout: true).trim()
     if (text == '0') {
         return 0
     }
@@ -266,7 +273,7 @@ def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
 }
 
 def stopServer(String rconHost, String rconPort, String rconPassword) {
-    return sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'stop'", returnStdout: true).trim()
+    return sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'stop' || echo 'failed'", returnStdout: true).trim() != 'failed'
 }
 
 def isPortOpen(String port) {
