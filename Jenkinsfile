@@ -14,8 +14,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
-                        echo "Using Minecraft server directory: ${env.SERVRER_DIR}"
-                    
                         if (!env.SERVER_DIR?.trim()) {
                             error 'SERVER_DIR is empty. Pipeline will be aborted.'
                         }
@@ -26,6 +24,7 @@ pipeline {
                         }
                         
                         dir(env.SERVER_DIR) {
+                            sh 'ls'
                         }
                     }
                 }
