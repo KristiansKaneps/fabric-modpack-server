@@ -261,6 +261,8 @@ def broadcastMessage(String rconHost, String rconPort, String rconPassword, Stri
 
 def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
     def text = sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'list' || echo '0'", returnStdout: true).trim()
+    // Clean up any non-printable characters (e.g., color codes)
+    text = text.replaceAll(/\x1b\[[0-9;]*m/, '')
     echo "RCON Command Output: $text"
     if (text == '0') {
         return 0
@@ -272,6 +274,7 @@ def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
     if (matcher) {
         return matcher[0][1].toInteger()
     } else {
+        echo "Could not parse player count from: ${text}"
         return 0
     }
 }
