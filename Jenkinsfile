@@ -27,8 +27,8 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                         dir(env.SERVER_DIR) {
-                            def commitHash = sh(script: "git ls-remote ${env.GIT_REPOSITORY_URL} ${env.GIT_REPOSITORY_BRANCH} | awk '{ print \$1 }'", returnStdout: true).trim()
-                            def commitMessage = sh(script: "git log -1 --pretty=%B ${commitHash}", returnStdout: true).trim()
+                            def commitHash = sh(script: "sudo -u minecraft git ls-remote ${env.GIT_REPOSITORY_URL} ${env.GIT_REPOSITORY_BRANCH} | awk '{ print \$1 }'", returnStdout: true).trim()
+                            def commitMessage = sh(script: "sudo -u minecraft git log -1 --pretty=%B ${commitHash}", returnStdout: true).trim()
                             if (commitMessage.startsWith("PUBLISH CONFIG")) {
                                 skipPipeline = true
                                 echo "Skipping pipeline execution due to 'PUBLISH CONFIG' commit message"
@@ -85,7 +85,7 @@ pipeline {
                                     sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
                                 } else {
                                     echo 'Minecraft RCON port is open. Trying to stop through RCON...'
-                                    sh "sudo -u minecraft ${env.SERVER_DIR}/stop-rcon.sh '${env.SERVER_HOST}' '${env.SERVER_RCON_PORT}' '${env.SERVER_RCON_PASS}'"
+                                    stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)
                                 }
                                 sleep time: 15, unit: 'SECONDS'
                             } else {
@@ -109,7 +109,7 @@ pipeline {
                                         countdownSeconds -= interval
                                     }
                                 }
-                                sh "sudo -u minecraft ${env.SERVER_DIR}/stop-rcon.sh '${env.SERVER_HOST}' '${env.SERVER_RCON_PORT}' '${env.SERVER_RCON_PASS}'"
+                                stopServer(env.SERVER_HOST, env.SERVER_RCON_PORT, env.SERVER_RCON_PASSWORD)
                                 sleep time: 15, unit: 'SECONDS'
                             }
 
@@ -266,6 +266,10 @@ def checkPlayerCount(String rconHost, String rconPort, String rconPassword) {
     } else {
         return 0
     }
+}
+
+def stopServer(String rconHost, String rconPort, String rconPassword) {
+    return sh(script: "./rcon/mcrcon -H '$rconHost' -P '$rconPort' -p '$rconPassword' 'stop'", returnStdout: true).trim()
 }
 
 def isPortOpen(String port) {
