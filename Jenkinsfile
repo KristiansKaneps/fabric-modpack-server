@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Setup Minecraft Server') {
             script {
-                withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR']) {
+                withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                     echo "Using Minecraft server directory: ${env.SERVRER_DIR}"
                     
                     if (!env.SERVER_DIR?.trim()) {
