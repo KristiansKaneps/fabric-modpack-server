@@ -42,6 +42,7 @@
 	#Minimum number of ticks between loss of power and chunk unloading. Rounds up to multiples of update interval
 	#Range: 0 ~ 1200
 	unloadGracePeriod = 20
+
 #.
 #Configure the Brass Chunk Loader
 [brass]

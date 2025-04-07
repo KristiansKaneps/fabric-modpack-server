@@ -2,9 +2,9 @@
 # Should space-clicking move all items even if an empty slot was clicked?
 allowBulkTransferAllOnEmptySlot = false
 
-# Should space-clicking armor in the inventory swap to all matching armor?
-bulkTransferArmorSets = true
-
 # Use the client implementation even on servers that have the mod installed - only useful for development purposes.
 forceClientImplementation = false
+
+# You can now go into your Controls and unbind the respective Inventory Essentials keys instead!
+whereDidTheConfigsGo = true
 
