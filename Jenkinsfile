@@ -30,9 +30,9 @@ pipeline {
                     withCredentials([string(credentialsId: 'MINECRAFT_FABRIC_SERVER_DIR', variable: 'SERVER_DIR')]) {
                         def commitMessage = sh(script: "git log -1 --pretty=%B ${env.GIT_COMMIT}", returnStdout: true).trim()
                         echo "Commit message: ${commitMessage}"
-                        if (commitMessage.startsWith("PUBLISH CONFIG")) {
+                        if (commitMessage.startsWith("PUBLISH")) {
                             skipPipeline = true
-                            echo "Skipping pipeline execution due to 'PUBLISH CONFIG' commit message"
+                            echo "Skipping pipeline execution due to 'PUBLISH' commit message"
                         }
                     }
                 }
