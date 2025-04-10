@@ -225,7 +225,7 @@ pipeline {
                             sh "sudo -u minecraft ${env.SERVER_DIR}/run-detached.sh"
                             echo 'Waiting for server to start...'
 
-                            def timeout = 300
+                            def timeout = 420
                             def sleepInterval = 5
                             def elapsedTime = 0
 
