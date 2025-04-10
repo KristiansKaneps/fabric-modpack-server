@@ -79,6 +79,7 @@ pipeline {
                                         break
                                     }
                                     sleep time: sleepInterval, unit: 'SECONDS'
+                                    elapsedTime += sleepInterval
                                 }
                                 if (!rconPortOpen) {
                                     echo 'Minecraft RCON port is still not open. Trying to stop manually...'
@@ -131,18 +132,37 @@ pipeline {
                                 sleep time: 15, unit: 'SECONDS'
                             }
 
-                            portOpen = isPortOpen(env.SERVER_PORT)
+                            portOpen = isPortOpen(env.SERVER_PORT) || isPortOpen(env.SERVER_RCON_PORT)
                             if (!portOpen) {
                                 echo 'Minecraft server is not running. Continuing...'
                             } else {
-                                echo 'Minecraft server is running after 15 seconds. Trying to stop again...'
-                                sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
-                                sleep time: 20, unit: 'SECONDS'
-                                portOpen = isPortOpen(env.SERVER_PORT)
-                                if (!portOpen) {
-                                    echo 'Minecraft server is not running. Continuing...'
-                                } else {
-                                    error 'Could not stop minecraft server. Manual intervention required!'
+                                echo 'Waiting for server to stop...'
+
+                                timeout = 300
+                                sleepInterval = 5
+                                elapsedTime = 0
+
+                                while (elapsedTime < timeout) {
+                                    portOpen = isPortOpen(env.SERVER_PORT) || isPortOpen(env.SERVER_RCON_PORT)
+                                    if (!portOpen) {
+                                        break
+                                    }
+                                    sleep time: sleepInterval, unit: 'SECONDS'
+                                    elapsedTime += sleepInterval
+                                }
+
+                                if (elapsedTime >= timeout) {
+                                    error 'Minecraft server did not stop within timeout. Trying to stop again...'
+                                    sleep time: 5, unit: 'SECONDS'
+
+                                    sh "sudo -u minecraft ${env.SERVER_DIR}/stop-detached.sh"
+                                    sleep time: 20, unit: 'SECONDS'
+                                    portOpen = isPortOpen(env.SERVER_PORT)
+                                    if (!portOpen) {
+                                        echo 'Minecraft server is not running. Continuing...'
+                                    } else {
+                                        error 'Could not stop minecraft server. Manual intervention required!'
+                                    }
                                 }
                             }
                         }
@@ -210,13 +230,14 @@ pipeline {
                             def elapsedTime = 0
 
                             while (elapsedTime < timeout) {
-                                def rconPortOpen = isPortOpen(env.SERVER_RCON_PORT)
-                                if (rconPortOpen) {
+                                def portOpen = isPortOpen(env.SERVER_PORT) && isPortOpen(env.SERVER_RCON_PORT)
+                                if (portOpen) {
                                     echo 'Minecraft server is running.'
                                     serverStarted = true
                                     break
                                 }
                                 sleep time: sleepInterval, unit: 'SECONDS'
+                                elapsedTime += sleepInterval
                             }
 
                             if (elapsedTime >= timeout) {
