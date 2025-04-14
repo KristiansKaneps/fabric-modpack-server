@@ -8,7 +8,7 @@
     "spire": "strength",
     "eye": "regeneration",
     "snout": "fire_resistance",
-    "rib": "haste",
+    "rib": "regeneration",
     "vex": "invisibility",
     "ward": "absorption",
     "tide": "luck",
@@ -25,15 +25,15 @@
     "bolt": "strength"
   },
   "strengths": {
-    "copper": 0,
-    "iron": 0,
-    "redstone": 0,
-    "lapis": 0,
-    "quartz": 0,
-    "gold": 0,
-    "emerald": 0,
-    "amethyst": 0,
-    "diamond": 1,
+    "copper": 2,
+    "iron": 2,
+    "redstone": 2,
+    "lapis": 2,
+    "quartz": 2,
+    "gold": 2,
+    "emerald": 2,
+    "amethyst": 2,
+    "diamond": 2,
     "netherite": 2
   }
 }
