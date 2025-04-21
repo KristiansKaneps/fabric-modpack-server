@@ -188,7 +188,8 @@ pipeline {
                         }
                         
                         dir(env.SERVER_DIR) {
-                            sh "sudo -u minecraft git -C ${env.SERVER_DIR} pull origin master"
+                            sh "sudo -u minecraft git -C ${env.SERVER_DIR} fetch origin master"
+                            sh "sudo -u minecraft git -C ${env.SERVER_DIR} merge ${env.GIT_COMMIT}"
                             sh """
                             rm -f server.properties
                             cp overwrite.server.properties server.properties
