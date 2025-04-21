@@ -18,3 +18,4 @@ world
 config/skinrestorer/mojang_profile_cache.json
 server.properties
 backup
+crash-reports
